@@ -162,7 +162,12 @@ pa_volume_t mv_current_step_value(struct mv_userdata *u);
 uint32_t mv_search_step(pa_volume_t *steps, uint32_t n_steps, pa_volume_t vol);
 
 /* normalize mdB values to linear values */
-void mv_normalize_steps(struct mv_volume_steps *steps);
+void mv_normalize_steps(struct mv_volume_steps *steps, int32_t *steps_mB, uint32_t count);
+
+/* parse step values to steps from step_string.
+ * return number of steps found, or -1 on error
+ */
+uint32_t mv_parse_single_steps(int32_t *steps_mB, const char *step_string);
 
 /* parse step values for route from step_string_call and step_string_media.
  * after successfull parsing of both strings, new filled struct mv_volume_steps_set is

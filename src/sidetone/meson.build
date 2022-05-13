@@ -16,3 +16,14 @@ meego_sidetone = library('module-meego-sidetone',
   dependencies : [meego_common_dep],
   name_prefix : ''
 )
+
+meego_sidetone_inc = include_directories('.')
+
+meego_sidetone_dep = declare_dependency(
+  link_with : meego_sidetone,
+  compile_args : pa_c_args,
+  dependencies : libmeego_common_deps,
+  include_directories : [configinc, libmeego_common_inc],
+)
+
+subdir('tests')

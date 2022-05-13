@@ -8,3 +8,5 @@ meego_parameters = library('module-meego-parameters',
   dependencies : [meego_common_dep],
   name_prefix : ''
 )
+
+subdir('testmodule')

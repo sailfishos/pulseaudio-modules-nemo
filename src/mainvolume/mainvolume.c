@@ -121,7 +121,7 @@ uint32_t mv_search_step(pa_volume_t *steps, uint32_t n_steps, pa_volume_t vol) {
     return sel;
 }
 
-static void normalize_steps(struct mv_volume_steps *steps, int32_t *steps_mB, uint32_t count) {
+void mv_normalize_steps(struct mv_volume_steps *steps, int32_t *steps_mB, uint32_t count) {
     uint32_t i = 0;
 
     pa_assert(steps);
@@ -145,7 +145,7 @@ static void normalize_steps(struct mv_volume_steps *steps, int32_t *steps_mB, ui
     }
 }
 
-static uint32_t parse_single_steps(int32_t *steps_mB, const char *step_string) {
+uint32_t mv_parse_single_steps(int32_t *steps_mB, const char *step_string) {
     uint32_t len;
     uint32_t count = 0;
     uint32_t i = 0;
@@ -231,13 +231,13 @@ static bool generate_steps_set(struct mv_volume_steps *steps, const char *step_s
     int32_t steps_mB[MAX_STEPS];
     uint32_t steps_count;
 
-    steps_count = parse_single_steps(steps_mB, step_string);
+    steps_count = mv_parse_single_steps(steps_mB, step_string);
     if (steps_count < 1) {
         pa_log_warn("failed to parse steps; %s", step_string);
         return false;
     }
     steps->step = pa_xmalloc(sizeof(pa_volume_t) * steps_count);
-    normalize_steps(steps, steps_mB, steps_count);
+    mv_normalize_steps(steps, steps_mB, steps_count);
 
     return true;
 }

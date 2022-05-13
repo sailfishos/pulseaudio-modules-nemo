@@ -33,7 +33,7 @@
 
 #define COUNT (10)
 
-static void init_steps(int *steps, int count) {
+static void init_steps(pa_volume_t *steps, int count) {
     int i;
 
     for (i = 0; i < count; i++) {
@@ -44,7 +44,7 @@ static void init_steps(int *steps, int count) {
 START_TEST (search_step_exact)
 {
     const int expected_step = 2;
-    int steps[COUNT];
+    pa_volume_t steps[COUNT];
     int step;
 
     init_steps(steps, COUNT);
@@ -58,7 +58,7 @@ END_TEST
 START_TEST (search_step_near_negative)
 {
     const int expected_step = 2;
-    int steps[COUNT];
+    pa_volume_t steps[COUNT];
     int step;
 
     init_steps(steps, COUNT);
@@ -72,7 +72,7 @@ END_TEST
 START_TEST (search_step_near_positive)
 {
     const int expected_step = 3;
-    int steps[COUNT];
+    pa_volume_t steps[COUNT];
     int step;
 
     init_steps(steps, COUNT);
@@ -86,7 +86,7 @@ END_TEST
 START_TEST (search_step_between)
 {
     const int expected_step = 3;
-    int steps[COUNT];
+    pa_volume_t steps[COUNT];
     int step;
 
     init_steps(steps, COUNT);
@@ -100,7 +100,7 @@ END_TEST
 START_TEST (search_step_max)
 {
     const int expected_step = 9;
-    int steps[COUNT];
+    pa_volume_t steps[COUNT];
     int step;
 
     init_steps(steps, COUNT);
@@ -114,7 +114,7 @@ END_TEST
 START_TEST (search_step_out_of_bounds)
 {
     const int expected_step = COUNT-1;
-    int steps[COUNT];
+    pa_volume_t steps[COUNT];
     int step;
 
     init_steps(steps, COUNT);
@@ -126,26 +126,11 @@ START_TEST (search_step_out_of_bounds)
 }
 END_TEST
 
-START_TEST (search_step_out_of_bounds_negative)
-{
-    const int expected_step = 0;
-    int steps[COUNT];
-    int step;
-
-    init_steps(steps, COUNT);
-
-    step = mv_search_step(steps, COUNT, -5);
-
-    fail_unless(step == expected_step, "Expected to fail, step %d - found step %d", expected_step, step);
-
-}
-END_TEST
-
 START_TEST (search_step_range)
 {
     const int unexpected_step = -1;
     const int n_steps = 2;
-    int steps[n_steps];
+    pa_volume_t steps[n_steps];
     int step;
     int i;
 
@@ -173,10 +158,10 @@ START_TEST (parse_steps)
     const char *STRING = "0:0,1:-5,2:-10,3:-10";
     const int expected_count = 4;
 
-    struct mv_volume_steps steps;
-    int reply;
+    int32_t steps[MAX_STEPS];
+    uint32_t reply;
 
-    reply = mv_parse_single_steps(&steps, STRING);
+    reply = mv_parse_single_steps(steps, STRING);
 
     fail_unless(reply == expected_count, NULL);
 }
@@ -185,12 +170,12 @@ END_TEST
 START_TEST (parse_steps_fail)
 {
     const char *STRING = "0few:0f,ew1f:-f5ew,f2:few-10fe,w3few:-10";
-    const int expected_count = -1;
+    const int expected_count = 0;
 
-    struct mv_volume_steps steps;
-    int reply;
+    int32_t steps[MAX_STEPS];
+    uint32_t reply;
 
-    reply = mv_parse_single_steps(&steps, STRING);
+    reply = mv_parse_single_steps(steps, STRING);
 
     fail_unless(reply == expected_count, "Reply %d - Expected reply %d", reply, expected_count);
 }
@@ -203,15 +188,15 @@ START_TEST (parse_steps_verify)
     const int e_step[4] = { -1500, -1000, -500, 0};
     int i;
 
-    struct mv_volume_steps steps;
-    int reply;
+    int32_t steps[MAX_STEPS];
+    uint32_t reply;
 
-    reply = mv_parse_single_steps(&steps, STRING);
+    reply = mv_parse_single_steps(steps, STRING);
 
     fail_unless(reply == expected_count, NULL);
 
-    for (i = 0; i < steps.n_steps; i++) {
-        fail_unless(steps.step[i] == e_step[i], NULL);
+    for (i = 0; i < reply; i++) {
+        fail_unless(steps[i] == e_step[i], NULL);
     }
 }
 END_TEST
@@ -225,15 +210,18 @@ START_TEST (normalize)
         pa_sw_volume_from_dB(-3000.0 / 100.0),
         pa_sw_volume_from_dB(0.0)
     };
-    steps.n_steps = 3;
-    steps.step[0] = -20000; /* mute treshold is -20000 mB */
-    steps.step[1] = -3000;
-    steps.step[2] = 0;
+    int32_t steps_mB[3];
+    steps_mB[0] = -20000; /* mute treshold is -20000 mB */
+    steps_mB[1] = -3000;
+    steps_mB[2] = 0;
 
-    mv_normalize_steps(&steps);
+    steps.step = pa_xmalloc(sizeof(pa_volume_t) * 3);
+    mv_normalize_steps(&steps, steps_mB, 3);
 
     for (i = 0; i < steps.n_steps; i++)
         fail_unless(steps.step[i] == e_step[i], "Step[%d] value %d - expected value %d", i, steps.step[i], e_step[i]);
+
+    pa_xfree(steps.step);
 }
 END_TEST
 
@@ -247,14 +235,19 @@ START_TEST (parse_steps_verify_normalize)
     };
 
     struct mv_volume_steps steps;
-    int reply;
+    int32_t steps_mB[MAX_STEPS];
+    uint32_t reply;
 
-    reply = mv_parse_single_steps(&steps, STRING);
-    mv_normalize_steps(&steps);
+    reply = mv_parse_single_steps(steps_mB, STRING);
+
+    steps.step = pa_xmalloc(sizeof(pa_volume_t) * expected_count);
+    mv_normalize_steps(&steps, steps_mB, reply);
 
     fail_unless(reply == expected_count, NULL);
     fail_unless(steps.step[0] == e_step[0], NULL);
     fail_unless(steps.step[1] == e_step[1], NULL);
+
+    pa_xfree(steps.step);
 }
 END_TEST
 
@@ -263,10 +256,10 @@ START_TEST (parse_steps_empty)
     const char *STRING = "";
     const int expected_reply = 0;
 
-    struct mv_volume_steps steps;
-    int reply;
+    int32_t steps[MAX_STEPS];
+    uint32_t reply;
 
-    reply = mv_parse_single_steps(&steps, STRING);
+    reply = mv_parse_single_steps(steps, STRING);
 
     fail_unless(reply == expected_reply, NULL);
 }
@@ -275,12 +268,12 @@ END_TEST
 START_TEST (parse_steps_malformed1)
 {
     const char *STRING = "0:43,2:";
-    const int expected_reply = -1;
+    const int expected_reply = 0;
 
-    struct mv_volume_steps steps;
-    int reply;
+    int32_t steps[MAX_STEPS];
+    uint32_t  reply;
 
-    reply = mv_parse_single_steps(&steps, STRING);
+    reply = mv_parse_single_steps(steps, STRING);
 
     fail_unless(reply == expected_reply, NULL);
 }
@@ -289,12 +282,12 @@ END_TEST
 START_TEST (parse_steps_malformed2)
 {
     const char *STRING = "0:43,2:55,";
-    const int expected_reply = -1;
+    const int expected_reply = 0;
 
-    struct mv_volume_steps steps;
-    int reply;
+    int32_t steps[MAX_STEPS];
+    uint32_t reply;
 
-    reply = mv_parse_single_steps(&steps, STRING);
+    reply = mv_parse_single_steps(steps, STRING);
 
     fail_unless(reply == expected_reply, NULL);
 }
@@ -312,7 +305,6 @@ Suite *mainvolume_suite() {
     tcase_add_test(tc_core, search_step_between);
     tcase_add_test(tc_core, search_step_max);
     tcase_add_test(tc_core, search_step_out_of_bounds);
-    tcase_add_test(tc_core, search_step_out_of_bounds_negative);
     tcase_add_test(tc_core, search_step_range);
     tcase_add_test(tc_core, parse_steps);
     tcase_add_test(tc_core, parse_steps_fail);

@@ -4,6 +4,8 @@ meego_mainvolume_sources = [
   'module-meego-mainvolume.c',
 ]
 
+meego_mainvolume_inc = include_directories('.')
+
 meego_mainvolume = library('module-meego-mainvolume',
   meego_mainvolume_sources,
   c_args : [pa_c_args, '-DPA_MODULE_NAME=module_meego_mainvolume'],
@@ -20,3 +22,5 @@ meego_mainvolume_dep = declare_dependency(
   dependencies : libmeego_common_deps,
   include_directories : [configinc, libmeego_common_inc],
 )
+
+subdir('tests')
