@@ -7,15 +7,15 @@ Name:       pulseaudio-modules-nemo
 Summary:    PulseAudio modules for Nemo
 Version:    %{pulsemajorminor}.30
 Release:    1
-Group:      Multimedia/PulseAudio
 License:    LGPLv2+
-URL:        https://git.sailfishos.org/mer-core/pulseaudio-modules-nemo
+URL:        https://github.com/sailfishos/pulseaudio-modules-nemo
 Source0:    %{name}-%{version}.tar.gz
+BuildRequires:  libtool-ltdl-devel
+BuildRequires:  meson
 BuildRequires:  pkgconfig(alsa) >= 1.0.19
 BuildRequires:  pkgconfig(check)
 BuildRequires:  pkgconfig(dbus-1)
 BuildRequires:  pkgconfig(pulsecore) >= %{pulsemajorminor}
-BuildRequires:  libtool-ltdl-devel
 
 %description
 PulseAudio modules for Nemo.
@@ -98,7 +98,6 @@ This contains a modified version of the original stream-restore module in PulseA
 
 %package devel
 Summary:    Development files for modules.
-Group:      Development/Libraries
 Requires:   %{name}-common = %{version}-%{release}
 Requires:   pulseaudio >= %{pulseversion}
 
@@ -106,29 +105,15 @@ Requires:   pulseaudio >= %{pulseversion}
 This contains development files for nemo modules.
 
 %prep
-%setup -q -n %{name}-%{version}
-
+%autosetup -n %{name}-%{version}
 
 %build
 echo "%{moduleversion}" > .tarball-version
-%reconfigure --disable-static
-make %{?jobs:-j%jobs}
-
+%meson
+%meson_build
 
 %install
-rm -rf %{buildroot}
-%make_install
-
-install -d %{buildroot}/%{_prefix}/include/pulsecore/modules/meego
-install -m 644 src/common/include/meego/*.h %{buildroot}/%{_prefix}/include/pulsecore/modules/meego
-install -m 644 src/voice/module-voice-api.h %{buildroot}/%{_prefix}/include/pulsecore/modules/meego
-install -m 644 src/music/module-music-api.h %{buildroot}/%{_prefix}/include/pulsecore/modules/meego
-install -m 644 src/record/module-record-api.h %{buildroot}/%{_prefix}/include/pulsecore/modules/meego
-install -d %{buildroot}/%{_prefix}/include/pulsecore/modules/sailfishos
-install -m 644 src/common/include/sailfishos/*.h %{buildroot}/%{_prefix}/include/pulsecore/modules/sailfishos
-install -d %{buildroot}/%{_libdir}/pkgconfig
-install -m 644 src/common/*.pc %{buildroot}/%{_libdir}/pkgconfig
-
+%meson_install
 
 %files common
 %defattr(-,root,root,-)

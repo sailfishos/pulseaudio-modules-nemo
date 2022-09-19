@@ -27,9 +27,9 @@
 #include <pulsecore/core-util.h>
 #include <pulsecore/namereg.h>
 
-#include "common/proplist-meego.h"
-#include "common/parameter-hook.h"
-#include "common/parameter-modifier.h"
+#include "meego/proplist-meego.h"
+#include "meego/parameter-hook.h"
+#include "meego/parameter-modifier.h"
 #include "voice/module-voice-api.h"
 
 PA_MODULE_AUTHOR("Antti-Ville Jansson");
