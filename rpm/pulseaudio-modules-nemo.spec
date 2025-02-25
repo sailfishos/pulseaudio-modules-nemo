@@ -116,44 +116,34 @@ echo "%{moduleversion}" > .tarball-version
 %meson_install
 
 %files common
-%defattr(-,root,root,-)
-%{_libdir}/pulse-%{pulsemajorminor}/modules/libmeego-common.so
+%{_libdir}/pulse-*/modules/libmeego-common.so
 %license COPYING
 
 %files music
-%defattr(-,root,root,-)
-%{_libdir}/pulse-%{pulsemajorminor}/modules/module-meego-music.so
+%{_libdir}/pulse-*/modules/module-meego-music.so
 
 %files record
-%defattr(-,root,root,-)
-%{_libdir}/pulse-%{pulsemajorminor}/modules/module-meego-record.so
+%{_libdir}/pulse-*/modules/module-meego-record.so
 
 %files voice
-%defattr(-,root,root,-)
-%{_libdir}/pulse-%{pulsemajorminor}/modules/module-meego-voice.so
+%{_libdir}/pulse-*/modules/module-meego-voice.so
 
 %files mainvolume
-%defattr(-,root,root,-)
-%{_libdir}/pulse-%{pulsemajorminor}/modules/module-meego-mainvolume.so
+%{_libdir}/pulse-*/modules/module-meego-mainvolume.so
 
 %files parameters
-%defattr(-,root,root,-)
-%{_libdir}/pulse-%{pulsemajorminor}/modules/module-meego-parameters.so
+%{_libdir}/pulse-*/modules/module-meego-parameters.so
 
 %files sidetone
-%defattr(-,root,root,-)
-%{_libdir}/pulse-%{pulsemajorminor}/modules/module-meego-sidetone.so
+%{_libdir}/pulse-*/modules/module-meego-sidetone.so
 
 %files test
-%defattr(-,root,root,-)
-%{_libdir}/pulse-%{pulsemajorminor}/modules/module-meego-test.so
+%{_libdir}/pulse-*/modules/module-meego-test.so
 
 %files stream-restore
-%defattr(-,root,root,-)
-%{_libdir}/pulse-%{pulsemajorminor}/modules/module-stream-restore-nemo.so
+%{_libdir}/pulse-*/modules/module-stream-restore-nemo.so
 
 %files devel
-%defattr(-,root,root,-)
 %{_prefix}/include/pulsecore/modules/meego/*.h
 %{_prefix}/include/pulsecore/modules/sailfishos/*.h
 %{_libdir}/pkgconfig/*.pc
