@@ -13,7 +13,7 @@
 - Package 2.1.0 from the new upstream at
   https://github.com/nemomobile/pulseaudio-modules-nemo
 
-* Thu Sep 4 2012 Tanu Kaskinen <tanu.kaskinen@jollamobile.com> - 0.9.19.0.11
+* Tue Sep 4 2012 Tanu Kaskinen <tanu.kaskinen@jollamobile.com> - 0.9.19.0.11
 - Fixes NEMO#326: cmtspeech: Change the retry interval for opening
   /dev/cmt_speech from 0.5 seconds to 60 seconds.
 - Removed a duplicate patch.
@@ -62,16 +62,16 @@
 - Buffer change signal sent to old_alsa_sink only when needed.
 - Added 1 second sleepon cmtspeech disconnect to give busytone after call.
 
-* Thu Oct 26 2010 Jouni Peltonen <jouni.peltonen@cybercom.com> - 0.9.21.0.20100915
+* Tue Oct 26 2010 Jouni Peltonen <jouni.peltonen@cybercom.com> - 0.9.21.0.20100915
 - Cmtspeech module patch changed to include alsa_sink_old primary and alternative
   buffer switching. Part of the fix for BMC#8423, BMC#8428 and BMC#8605.
 
-* Tue Oct 14 2010 Sami Sirkia <sami.sirkia@cybercom.com> - 0.9.21.0.20100915
+* Thu Oct 14 2010 Sami Sirkia <sami.sirkia@cybercom.com> - 0.9.21.0.20100915
 - Unnecessary build requirements removed.
 - Requirement for libpulse-browse causes pulseaudio-modules-meego to fail,
   since it is no longer available.
 
-* Tue Oct 6 2010 Sami Sirkia <sami.sirkia@cybercom.com> - 0.9.21.0.20100915
+* Wed Oct 6 2010 Sami Sirkia <sami.sirkia@cybercom.com> - 0.9.21.0.20100915
 - Part of the solution for Bug 8039: "Current N900 telephony audio 
   implementation does not live up to audio standards required 
   by 3GPP for handsets on networks"
