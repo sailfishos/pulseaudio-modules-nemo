@@ -77,7 +77,6 @@ struct mv_userdata {
     pa_core *core;
     pa_module *module;
     bool tuning_mode;
-    bool virtual_stream;
 
     pa_sink_input *virtual_sink_input;
 

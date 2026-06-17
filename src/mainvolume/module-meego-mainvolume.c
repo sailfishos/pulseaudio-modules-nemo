@@ -51,7 +51,7 @@
 PA_MODULE_AUTHOR("Juho Hämäläinen");
 PA_MODULE_DESCRIPTION("Nokia mainvolume module");
 PA_MODULE_USAGE("tuning_mode=<true/false> defaults to false "
-                "virtual_stream=<true/false> create virtual stream for voice call volume control (default false) "
+                "virtual_stream=<obsolete> "
                 "listening_time_notifier_conf=<file location for listening time notifier configuration> "
                 "mute_routing=<true/false> apply muting to media streams when volumes are out of sync (default true) "
                 "unmute_delay=<time in ms> time to keep media streams muted after volumes are in sync (default 50)");
@@ -177,66 +177,6 @@ static int sink_input_pop_cb(pa_sink_input *i, size_t nbytes, pa_memchunk *chunk
 static void sink_input_process_rewind_cb(pa_sink_input *i, size_t nbytes) {
 }
 
-static void create_virtual_stream(struct mv_userdata *u) {
-    pa_sink_input_new_data data;
-
-    pa_assert(u);
-
-    if (!u->virtual_stream || u->virtual_sink_input)
-        return;
-
-    pa_sink_input_new_data_init(&data);
-
-    data.driver = __FILE__;
-    data.module = u->module;
-    pa_proplist_sets(data.proplist, PA_PROP_MEDIA_NAME, "Virtual Stream for MainVolume Volume Control");
-    pa_proplist_sets(data.proplist, PA_PROP_MEDIA_ROLE, "phone");
-    pa_sink_input_new_data_set_sample_spec(&data, &u->core->default_sample_spec);
-    pa_sink_input_new_data_set_channel_map(&data, &u->core->default_channel_map);
-    data.flags = PA_SINK_INPUT_START_CORKED | PA_SINK_INPUT_NO_REMAP | PA_SINK_INPUT_NO_REMIX;
-
-    pa_sink_input_new(&u->virtual_sink_input, u->module->core, &data);
-    pa_sink_input_new_data_done(&data);
-
-    if (!u->virtual_sink_input) {
-        pa_log("failed to create virtual sink input.");
-        return;
-    }
-
-    u->virtual_sink_input->userdata = u;
-    u->virtual_sink_input->kill = sink_input_kill_cb;
-    u->virtual_sink_input->pop = sink_input_pop_cb;
-    u->virtual_sink_input->process_rewind = sink_input_process_rewind_cb;
-
-    pa_sink_input_put(u->virtual_sink_input);
-
-    pa_log_debug("created virtual sink input for voice call volume control.");
-}
-
-static void destroy_virtual_stream(struct mv_userdata *u) {
-    pa_sink_input *i;
-
-    pa_assert(u);
-
-    if (!u->virtual_sink_input)
-        return;
-
-    i = u->virtual_sink_input;
-    u->virtual_sink_input = NULL;
-    pa_sink_input_kill(i);
-
-    pa_log_debug("removed virtual stream.");
-}
-
-static void update_virtual_stream(struct mv_userdata *u) {
-    pa_assert(u);
-
-    if (!u->voip_active && (u->call_active || u->emergency_call_active))
-        create_virtual_stream(u);
-    else
-        destroy_virtual_stream(u);
-}
-
 static pa_hook_result_t call_state_cb(void *hook_data, void *call_data, void *slot_data) {
     const char *key       = call_data;
     struct mv_userdata *u = slot_data;
@@ -267,8 +207,6 @@ static pa_hook_result_t call_state_cb(void *hook_data, void *call_data, void *sl
                  u->voip_active ? "voip " : "",
                  u->call_active ? PA_NEMO_PROP_CALL_STATE_ACTIVE : PA_NEMO_PROP_CALL_STATE_INACTIVE,
                  u->current_steps->media.current_step, u->current_steps->call.current_step);
-
-    update_virtual_stream(u);
 
     signal_steps(u);
 
@@ -337,7 +275,6 @@ static void update_emergency_call_state(struct mv_userdata *u, bool new_state) {
         u->emergency_call_active = new_state;
         pa_log_info("Emergency call state changes to %s", u->emergency_call_active ? "active" : "inactive");
 
-        update_virtual_stream(u);
         steps = mv_active_steps(u);
 
         pa_volume_proxy_get_volume(u->volume_proxy, CALL_STREAM, &vol);
@@ -968,17 +905,11 @@ int pa__init(pa_module *m) {
     u->current_steps = fallback;
 
     u->tuning_mode = false;
-    u->virtual_stream = false;
     u->mute_routing = DEFAULT_MUTE_ROUTING;
     u->volume_sync_delay_ms = DEFAULT_VOLUME_SYNC_DELAY_MS;
 
     if (pa_modargs_get_value_boolean(ma, "tuning_mode", &u->tuning_mode) < 0) {
         pa_log_error("tuning_mode expects boolean argument");
-        goto fail;
-    }
-
-    if (pa_modargs_get_value_boolean(ma, "virtual_stream", &u->virtual_stream) < 0) {
-        pa_log_error("virtual_stream expects boolean argument");
         goto fail;
     }
 
@@ -1044,8 +975,6 @@ void pa__done(pa_module *m) {
     signal_timer_stop(u);
 
     dbus_done(u);
-
-    destroy_virtual_stream(u);
 
     if (u->sink_proplist_changed_slot)
         pa_hook_slot_free(u->sink_proplist_changed_slot);
