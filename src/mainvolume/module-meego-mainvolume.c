@@ -48,7 +48,7 @@
 #include "meego/volume-proxy.h"
 #include "sailfishos/defines.h"
 
-PA_MODULE_AUTHOR("Juho Hämäläinen");
+PA_MODULE_AUTHOR("Enni Hämäläinen");
 PA_MODULE_DESCRIPTION("Nokia mainvolume module");
 PA_MODULE_USAGE("tuning_mode=<true/false> defaults to false "
                 "virtual_stream=<obsolete> "

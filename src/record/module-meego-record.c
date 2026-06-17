@@ -45,7 +45,7 @@
 
 #include "module-record-api.h"
 
-PA_MODULE_AUTHOR("Juho Hamalainen");
+PA_MODULE_AUTHOR("Enni Hamalainen");
 PA_MODULE_DESCRIPTION("Nokia record module");
 PA_MODULE_USAGE(
     "master_source=<source to connect to> "
